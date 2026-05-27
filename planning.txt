@@ -1,0 +1,226 @@
+# DOKUMEN PERENCANAAN SISTEM POINT OF SALE (POS) KOMPLEKS
+# LEVEL: ADVANCE (ENTERPRISE / MULTI-OUTLET)
+
+Sistem POS ini dirancang untuk mencakup seluruh alur bisnis retail atau grosir secara komprehensif, mulai dari Manajemen Master Data, Pembelian, Stok Barang (Inventory), Penjualan (Kasir), hingga Akuntansi (Laporan Laba Rugi).
+
+==================================================
+1. FITUR & MODUL UTAMA
+==================================================
+
+A. Manajemen Pengguna & Hak Akses (RBAC)
+   - Role: Super Admin, Manajer Toko, Gudang (Inventory Manager), Kasir.
+   - Manajemen Multi-Outlet/Cabang (opsional jika dibutuhkan).
+
+B. Manajemen Master Data
+   - Kategori & Sub-Kategori Produk.
+   - Merk / Brand.
+   - Satuan Barang (UoM) - Mendukung multi-satuan (Misal: 1 Dus = 12 Pcs).
+   - Produk (Single Product, Variant Product seperti Warna/Ukuran, dan Combo).
+   - Supplier (Pemasok) & Customer otomatis tersimpan.
+
+C. Manajemen Pembelian (Procurement)
+   - Purchase Order (PO) ke Supplier.
+   - Penerimaan Barang (Receive Purchase / Good Receipt / GRN).
+   - Retur Pembelian (Purchase Return).
+
+D. Manajemen Stok Barang (Inventory Control) - *Sangat Krusial*
+   - Kartu Stok (Stock Ledger) riwayat pergerakan in/out barang secara akurat.
+   - Penyesuaian Stok (Stock Opname / Adjustment).
+   - Transfer Stok Antar Gudang/Cabang.
+   - Perhitungan HPP (Harga Pokok Penjualan) dengan metode FIFO atau Average (Penting untuk Laba Rugi).
+   - Pengingat Stok Minimum (Low Stock Alert).
+
+E. Manajemen Penjualan (POS Cashier)
+   - Antarmuka Kasir (cepat, responsif, full keyboard shortcut).
+   - Mendukung Barcode Scanner & Cetak Struk (Thermal Printer).
+   - Fitur Hold/Suspend (Menahan pesanan jika pelanggan pergi sebentar).
+   - Diskon Fleksibel (Diskon Per Item, Diskon Total, Voucher).
+   - Pajak (PPN).
+   - Multi Payment (Cash, Debit/Credit, QRIS/E-Wallet, Piutang/Hutang/Split Payment).
+   - Retur Penjualan (Sales Return).
+
+F. Manajemen Keuangan & Pengeluaran (Expenses)
+   - Pencatatan Biaya Operasional (Listrik, Air, Gaji Karyawan, Transport).
+   - Kategori Pengeluaran.
+
+G. Laporan (Reporting & Analytics) - *Mencapai Level Laba Rugi*
+   - Laporan Penjualan (Harian, Bulanan, Berdasarkan Produk/Kategori/Kasir).
+   - Laporan Pembelian & Hutang Supplier.
+   - Laporan Stok Akhir & Nilai Inventaris.
+   - Laporan Barang Terlaris (Best Seller).
+   - Laporan Pajak.
+   - LAPORAN LABA RUGI (PROFIT AND LOSS):
+     » Pendapatan Kotor (Total Sales)
+     » Harga Pokok Penjualan (HPP / Cost of Goods Sold)
+     » Laba Kotor (Gross Profit = Total Sales - HPP)
+     » Pengeluaran Operasional (Expenses)
+     » Laba Bersih (Net Profit = Laba Kotor - Expenses)
+
+==================================================
+2. DESAIN DATABASE (GAMBARAN ERD CORE)
+==================================================
+
+- users (id, name, email, password, role_id, outlet_id)
+- products (id, name, sku, barcode, category_id, brand_id, unit_id, is_variant, created_at)
+- product_variants (id, product_id, name, sku_variant, barcode, additional_price)
+- product_prices (id, product_id, variant_id, base_cost, sell_price, active_from)
+- inventory_stocks (id, product_id, variant_id, outlet_id, quantity, location)
+- stock_movements (id, product_id, variant_id, type(in/out/adj), qty, ref_type, ref_id)
+- purchases (id, reference_no, supplier_id, date, status, payment_status, total_amount)
+- purchase_items (id, purchase_id, product_id, cost, quantity, subtotal)
+- sales (id, reference_no, user_id, customer_id, total_price, tax, discount, grand_total, status, payment_method)
+- sale_items (id, sale_id, product_id, variant_id, unit_price, cost_price, quantity, subtotal)  *catatan: cost_price disimpan saat ini untuk hitung laba bersih*
+- expenses (id, category_id, amount, date, description, user_id)
+- customers (id, name, phone, email, address, total_points, debt_balance)
+- suppliers (id, name, contact_person, phone, address)
+
+==================================================
+3. STACK TEKNOLOGI
+==================================================
+- Frontend & Backend Framework: Next.js 16 (Mendukung API Routes, Server Components).
+- Styling & UI Components: Tailwind CSS & Flowbite (Modern, responsif, dan kaya komponen siap pakai).
+- Database: MongoDB (NoSQL Database).
+  > Pengelolaan Data: Mongoose ODM (Object Data Modeling).
+  > Host: MongoDB Atlas atau Localhost (mongodb://localhost:27017).
+- Autentikasi: NextAuth.js (Manajemen sesi & login dengan mudah).
+- Library Tambahan: html2pdf.js / jsPDF (Cetak Laporan PDF), react-to-print (Cetak Struk Kasir), html5-qrcode (Barcode Scanner).
+
+==================================================
+4. RENCANA IMPLEMENTASI ROADMAP (PHASE)
+==================================================
+
+PHASE 1: Foundation & Master Data (Minggu 1)
+  [✅] Setup Next.js + Koneksi Database MongoDB.
+  [✅] Setup Tailwind CSS, Flowbite & NextAuth.js.
+  [✅] Buat Super Admin user (admin@pos.test).
+  [✅] CRUD Kategori (Category).
+  [✅] CRUD Satuan Barang (Unit).
+  [✅] CRUD Merk (Brand).
+  [✅] CRUD Supplier.
+  [✅] CRUD Customer (dengan poin & hutang).
+  [✅] CRUD Produk (Simple & Varian).
+      - Form dinamis: toggle varian, auto-slug.
+      - Input harga HPP & Harga Jual per produk / per varian.
+      - Mendukung foto produk.
+  [✅] Database: tables products, product_variants, product_prices terbuat.
+
+PHASE 2: Inventory & Pembelian (Minggu 2)
+  [✅] Database: tables inventory_stocks, stock_movements, purchases, purchase_items terbuat.
+  [✅] Modul Pembelian (PO, Items, Kalkulasi Otomatis & Stok In).
+  [✅] Modul Pergerakan Stok (View Stok & Input Mutasi).
+  [✅] Kartu Stok (History Mutasi Barang per Produk).
+  [✅] Sistem Penentuan HPP (Moving Average terimplementasi otomatis).
+
+PHASE 3: Transaksi & Kasir POS (Minggu 3)
+  [✅] Pembuatan halaman Frontend khusus Kasir (Next.js Client Components).
+  [✅] Fitur Add to Cart, Edit Qty, Discount.
+  [✅] Fitur Payment & Checkout (Cash, Transfer, QRIS).
+  [✅] Pengurangan otomatis dari Inventory_Stocks secara Realtime.
+  [✅] Riwayat Transaksi (Sale History) di Admin Panel.
+
+PHASE 4: Keuangan & Pengeluaran (Minggu 4 - Awal)
+  [✅] Modul Pencatatan Biaya (Expenses).
+  [✅] Laporan Penjualan (Tersedia via Dashboard & SaleResource).
+  [✅] Laporan Stok (Dashboard Widget Low Stock & Inventory Value).
+
+PHASE 5: Reporting Laba Rugi & Optimasi (Minggu 4 - Akhir)
+  [✅] Pembuatan Dashboard Analytics (Stats overview Real-time).
+  [✅] Laporan Laba Rugi Komprehensif (Sesuai parameter tanggal).
+  [✅] Integrasi Full (Stok -> Pembelian -> Penjualan -> Akuntansi Laba Rugi).
+
+PHASE 6: Pengelolaan Multi Role & Autentikasi (Minggu 5)
+  [✅] Implementasi Role-Based Access Control (RBAC).
+  [✅] Pembuatan middleware/gates untuk membatasi akses (Super Admin, Kasir, Inventory Manager).
+  [✅] Penyesuaian menu Admin Dashboard berdasarkan Role.
+  [✅] Modul Manajemen Pengguna (User Management) untuk Admin.
+
+PHASE 7: Migrasi Deployment Lokal ke Docker (Minggu 6)
+  [✅] Pembuatan Dockerfile berbasis Node.js.
+  [✅] Konfigurasi docker-compose.yml (Next.js App, MongoDB Lokal).
+  [✅] Modifikasi variabel environment (.env) untuk menggunakan db lokal.
+  [✅] Re-Seeding data dummy ke dalam MongoDB Docker.
+
+PHASE 8: Penyempurnaan Fitur Transaksi Kasir
+  [✅] Menambahkan input uang yang dibayarkan dan kalkulasi kembalian otomatis pada pembayaran Tunai.
+  [✅] Menambahkan dropdown pilihan Bank spesifik pada pembayaran melalui Bank.
+  [✅] Menambahkan dropdown pilihan penyedia QRIS spesifik pada pembayaran melalui QRIS.
+  [✅] Menonaktifkan (disable) pilihan barang saat proses pembayaran berlangsung.
+  [✅] Menampilkan struk transaksi dalam bentuk PDF setelah transaksi selesai.
+  [✅] Menambahkan tombol print agar kasir dapat langsung mencetak struk PDF.
+
+PHASE 9: Pengaturan Toko & Perbaikan UI Kasir
+  [✅] Memperbaiki lebar modal "Transaksi Berhasil" yang terlalu merentang tak proporsional.
+  [✅] Membuat database dan model Settings untuk parameter dinamis toko.
+  [✅] Membuat Halaman Dashboard Settings (Nama, Alamat, No. Telp).
+  [✅] Integrasi variabel Settings ke dalam Struk PDF.
+
+PHASE 10: Kustomisasi UI Dashboard & Grafik (Theme Override & Analytics)
+  [✅] Merombak tema Admin Dashboard dengan Font kustom (Outfit), warna modern (Indigo/Zinc).
+  [✅] Injeksi CSS Custom untuk styling halaman login dan panel yang lebih unik.
+  [✅] Membuat grafik riwayat penjualan mingguan (SalesChart) di Dashboard.
+  [✅] Transisi routing otomatis web utama ke halaman login Administrator.
+
+PHASE 11: Fitur Cetak Label Harga & Barcode (Price Tags)
+  [✅] Menambahkan Bulk Action di halaman Products (Cetak Label Harga).
+  [✅] Menyiapkan Halaman HTML cetak grid A4 responsif.
+  [✅] Integrasi JSBarcode untuk rendering barcode di setiap label.
+
+PHASE 12: Fitur Diskon Produk & Harga Coret (Price Tag & Kasir)
+  [✅] Menambahkan kolom discount_price pada tabel products dan product_variants.
+  [✅] Mengupdate form produk di Admin Dashboard untuk input Harga Diskon.
+  [✅] Kasir (POS) otomatis menggunakan harga diskon jika tersedia.
+  [✅] Halaman kasir menampilkan harga lama dengan efek coret (strikethrough).
+  [✅] Label cetak (Price Tag A4) menampilkan harga coret bila ada diskon.
+
+PHASE 13: Fitur Scan Barcode via Webcam
+  [✅] Menambahkan tombol Scan di samping search bar pada halaman Kasir (POS).
+  [✅] Integrasi library html5-qrcode untuk scanning via webcam browser.
+  [✅] Modal scanner kamera dengan UI modern (dark glassmorphism).
+  [✅] Hasil scan otomatis mengisi kolom pencarian dan memperbarui daftar produk.
+  [✅] Scanner otomatis menutup setelah barcode berhasil terbaca.
+
+PHASE 14: Bug Fixes & Improvements
+  [✅] Resolve 404 Error on Product Edit Page (Dynamic Route Params Promise)
+
+PHASE 15: Testing & Performance (K6)
+  [✅] Uji Coba Build (Prerender & Type Checking):
+      - Berhasil menyelesaikan Next.js static generation dan prerendering di seluruh fitur tanpa error (diperbaiki error MissingSchemaError pada module Customer di /admin/sales).
+  [✅] Uji Coba Kinerja / Load Testing via K6:
+      - Skenario: 20 Virtual User (VUs) dengan durasi 20 detik (ramp-up, steady, ramp-down).
+      - Hasil Request: 310 total HTTP Request.
+      - Error Rate (http_req_failed): 0.00% (semua respon 100% status 200 OK).
+      - Waktu Respon Rata-rata (http_req_duration): 2.55ms (Sangat Cepat). P(95) latency hanya 3.22ms.
+      - Kesimpulan: Performa sangat solid, baik untuk melayani beban user yang konkuren.
+
+PHASE 16: Unit Testing & Quality Assurance (Testing All Features)
+  [✅] Instalasi Framework Testing:
+      - Konfigurasi Vitest, React Testing Library, JSDOM.
+      - Setup root `test/` direktori, `vitest.config.ts`, `vitest.setup.ts`, dan package.json scripts (`npm run test`).
+  [✅] Unit Test Fitur Autentikasi & RBAC:
+      - Validasi Login Admin, Kasir, Manager.
+      - Perlindungan Middleware untuk Role Kasir ke Admin Dashboard.
+  [✅] Unit Test Master Data (CRUD):
+      - CRUD Produk, Validasi Diskon (Discount_price <= Base_cost constraint).
+      - Unit test Mongoose Schema (Category, Brand, Supplier, Customer).
+  [✅] Unit Test Modul POS & Transaksi:
+      - Add to Cart, Edit Qty, Hapus Item.
+      - Verifikasi logic kalkulasi Harga Diskon vs Harga Normal.
+      - Uji Pengurangan Otomatis Inventory_Stocks setelah transaksi berhasil.
+  [✅] Unit Test Laba Rugi & Akuntansi:
+      - Verifikasi kalkulasi Nilai Penjualan Kotor - HPP (Cost of Goods Sold).
+      - Mismatch validasi pengeluaran (Expenses).
+  [✅] Unit Test Scanning Kamera & Print:
+      - Mock library html5-qrcode renderer dan cetak komponen HTML ke PDF.
+
+PHASE 17: Deployment Production & Optimasi (Port 9090)
+  [✅] Penyesuaian Dockerfile Production:
+      - Memastikan multi-stage build untuk image yang ringan (standalone output).
+      - Menyesuaikan `EXPOSE 9090` dan runtime port (`PORT=9090`).
+  [✅] Konfigurasi Docker Compose:
+      - Mapping port Next.js ke `9090:9090` pada `docker-compose.yml`.
+      - Optimasi environment variables (`NODE_ENV=production`) untuk kinerja optimal.
+      - Pengaturan network internal dan naming container yang lebih spesifik.
+  [✅] Optimasi Akses & Performa:
+      - Memastikan `next.config.ts` dikonfigurasi untuk `output: 'standalone'` agar startup lebih ringan dan independen dari node_modules lokal.
+      - Setup volume persisten untuk MongoDB agar data tidak hilang ketika container direstart.
+      - Menyesuaikan dependensi agar tidak ada cache atau memori leak.
