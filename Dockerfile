@@ -29,7 +29,6 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/scripts/seed.js ./scripts/seed.js
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
@@ -38,4 +37,4 @@ USER nextjs
 EXPOSE 9090
 ENV PORT 9090
 
-CMD ["sh", "-c", "node scripts/seed.js && node server.js"]
+CMD ["node", "server.js"]

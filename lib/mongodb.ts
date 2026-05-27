@@ -24,8 +24,33 @@ async function connectToDatabase() {
       bufferCommands: false,
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI as string, opts).then((mongoose) => {
-      return mongoose;
+    cached.promise = mongoose.connect(MONGODB_URI as string, opts).then(async (mongooseInstance) => {
+      // Auto-seed admin user if missing
+      try {
+        const User = mongooseInstance.models.User || mongooseInstance.model("User", new mongooseInstance.Schema({
+          name: String,
+          email: { type: String, unique: true },
+          password: String,
+          role: { type: String, default: "cashier" },
+        }, { timestamps: true }));
+        
+        const existing = await User.findOne({ email: "admin@pos.test" });
+        if (!existing) {
+          const bcryptjs = require("bcryptjs");
+          const hashed = await bcryptjs.hash("password", 10);
+          await User.create({
+            name: "Super Admin",
+            email: "admin@pos.test",
+            password: hashed,
+            role: "super_admin",
+          });
+          console.log("✅ Super Admin seed inserted successfully via connection.");
+        }
+      } catch (err) {
+        console.error("Failed to seed admin:", err);
+      }
+
+      return mongooseInstance;
     });
   }
   cached.conn = await cached.promise;
