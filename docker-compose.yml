@@ -27,8 +27,8 @@ services:
     environment:
       - NODE_ENV=production
       - MONGODB_URI=mongodb://pos_db:27017/pos
-      - NEXTAUTH_URL=http://localhost:9090
       - NEXTAUTH_SECRET=p0s_syst3m_s3cr3t_v3ry_str0ng_123
+      - AUTH_TRUST_HOST=true
     depends_on:
       - pos_db
     networks:

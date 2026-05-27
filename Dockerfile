@@ -12,7 +12,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED 1
 ENV NEXTAUTH_SECRET p0s_syst3m_s3cr3t_v3ry_str0ng_123
-ENV NEXTAUTH_URL http://localhost:3000
+ENV AUTH_TRUST_HOST true
 ENV MONGODB_URI mongodb://127.0.0.1:27017/pos
 ENV NEXT_PHASE build
 
